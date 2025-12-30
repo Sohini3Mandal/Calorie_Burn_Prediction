@@ -1,0 +1,162 @@
+import streamlit as st
+import pickle
+import pandas as pd
+import os
+
+# ==================================================
+# Load model artifacts safely
+# ==================================================
+@st.cache_resource
+def load_model_artifacts():
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+
+    model = pickle.load(open(os.path.join(base_dir, "best_model.pkl"), "rb"))
+    scaler = pickle.load(open(os.path.join(base_dir, "scaler.pkl"), "rb"))
+    feature_names = pickle.load(open(os.path.join(base_dir, "feature_names.pkl"), "rb"))
+
+    return model, scaler, feature_names
+
+
+model, scaler, feature_names = load_model_artifacts()
+
+# ==================================================
+# Page configuration
+# ==================================================
+st.set_page_config(
+    page_title="Calorie Burn Prediction",
+    page_icon="🔥",
+    layout="centered"
+)
+
+# ==================================================
+# Title & description
+# ==================================================
+st.title("🔥 Calorie Burn Prediction App")
+st.markdown(
+    "<p style='color:gray; font-size:16px;'>"
+    "Estimate calories burned during an exercise session using a machine learning model"
+    "</p>",
+    unsafe_allow_html=True
+)
+
+st.divider()
+
+# ==================================================
+# Sidebar
+# ==================================================
+with st.sidebar:
+    st.header("ℹ️ About the App")
+    st.write(
+        "This application uses a **Support Vector Regression (SVR)** model trained on "
+        "physiological and exercise-related features to estimate calorie expenditure."
+    )
+    st.markdown("---")
+    st.write("👩‍💻 **Author:** Sohini Mandal")
+
+# ==================================================
+# Input section
+# ==================================================
+st.subheader("🧍 Personal & Exercise Information")
+st.caption("Please enter accurate values for meaningful predictions")
+
+feature_units = {
+    "Age": "years",
+    "Height": "cm",
+    "Weight": "kg",
+    "Duration": "minutes",
+    "Heart_Rate": "bpm",
+    "Body_Temp": "°C"
+}
+
+input_data = {}
+
+# --------------------------------------------------
+# Gender input
+# --------------------------------------------------
+gender = st.radio(
+    "Gender",
+    options=["Female", "Male"],
+    horizontal=True
+)
+input_data["Gender_male"] = 1 if gender == "Male" else 0
+
+st.caption("Gender is internally encoded for prediction purposes")
+
+st.divider()
+
+# --------------------------------------------------
+# Numeric inputs (no default values)
+# --------------------------------------------------
+st.subheader("📊 Measurements")
+st.caption("All values must be numeric and non-negative")
+
+numeric_features = [f for f in feature_names if f != "Gender_male"]
+
+for feature in numeric_features:
+    unit = feature_units.get(feature, "")
+    label = f"{feature} ({unit})" if unit else feature
+
+    value = st.text_input(label, placeholder="Enter a numeric value")
+
+    if value.strip() == "":
+        input_data[feature] = None
+    else:
+        try:
+            input_data[feature] = float(value)
+            if input_data[feature] < 0:
+                st.error(f"❌ {feature} cannot be negative")
+                st.stop()
+        except ValueError:
+            st.error(f"❌ {feature} must be a numeric value")
+            st.stop()
+
+st.divider()
+
+# ==================================================
+# Prediction
+# ==================================================
+if st.button("🔍 Predict Calories Burned", type="primary", use_container_width=True):
+
+    # Check for missing inputs
+    if any(v is None for v in input_data.values()):
+        st.warning("⚠️ Please fill in all fields before predicting.")
+        st.stop()
+
+    try:
+        # Arrange inputs in correct order
+        X_input = pd.DataFrame([input_data], columns=feature_names)
+
+        # Separate numeric and categorical features
+        num_features = [f for f in feature_names if f != "Gender_male"]
+
+        X_num = X_input[num_features]
+        X_gender = X_input[["Gender_male"]]
+
+        # Scale numeric features only
+        X_num_scaled = scaler.transform(X_num)
+
+        # Combine scaled numeric + encoded gender
+        X_final = pd.DataFrame(X_num_scaled, columns=num_features)
+        X_final["Gender_male"] = X_gender.values
+
+        # Predict
+        prediction = model.predict(X_final)
+
+        st.success(
+            f"🔥 **Estimated Calories Burned:** `{prediction[0]:.2f}` kcal"
+        )
+
+    except Exception as e:
+        st.error(f"Prediction failed: {e}")
+
+# ==================================================
+# Footer
+# ==================================================
+st.markdown(
+    "<hr style='margin-top:30px;'>"
+    "<p style='color:gray; font-size:13px;'>"
+    "⚠️ This prediction is an estimate generated by a machine learning model and "
+    "should not be used for medical or clinical decision-making."
+    "</p>",
+    unsafe_allow_html=True
+)
