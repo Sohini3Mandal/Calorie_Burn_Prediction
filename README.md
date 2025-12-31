@@ -59,13 +59,13 @@ The trained SVR model is deployed as a **Streamlit web application** for real-ti
 Calorie_Burn_Prediction/
 │
 ├── Calorie Burn Prediction (Report).pdf   # Detailed project report
-├── CalorieBurnPrediction(Codes).ipynb     # Model training & analysis
+├── CalorieBurnPrediction(Notebook).ipynb  # Model training & analysis
 ├── Calories.csv                           # Dataset
 ├── best_model.pkl                         # Trained SVR model
 ├── scaler.pkl                             # StandardScaler object
 ├── feature_names.pkl                      # Feature schema
-├── prediction_app.py                     # Streamlit application
-├── requirements.txt                      # Dependencies
+├── prediction_app.py                      # Streamlit application
+├── requirements.txt                       # Dependencies
 └── README.md                              # Project documentation
 
 ```
