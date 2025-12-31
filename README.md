@@ -56,17 +56,17 @@ The trained SVR model is deployed as a **Streamlit web application** for real-ti
 ## Repository Structure
 
 ```
-Calorie_Burn_Prediction/
+📁 Calorie_Burn_Prediction
 │
-├── Calorie Burn Prediction (Report).pdf   # Detailed project report
-├── CalorieBurnPrediction(Notebook).ipynb  # Model training & analysis
-├── Calories.csv                           # Dataset
-├── best_model.pkl                         # Trained SVR model
-├── scaler.pkl                             # StandardScaler object
-├── feature_names.pkl                      # Feature schema
-├── prediction_app.py                      # Streamlit application
-├── requirements.txt                       # Dependencies
-└── README.md                              # Project documentation
+├── Calorie Burn Prediction (Report).pdf
+├── CalorieBurnPrediction(Notebook).ipynb
+├── Calories.csv
+├── README.md
+├── best_model.pkl
+├── feature_names.pkl
+├── prediction_app.py
+├── requirements.txt
+└── scaler.pkl
 
 ```
 ---
